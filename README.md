@@ -1,5 +1,8 @@
 # github-comments
-Compare commenting styles in Java and Python projects by analyzing open source projects.
+
+Comments are important to understand and maintain source code. The goal of this project is to
+compare commenting styles in Java and Python projects by analyzing comments in Java and Python
+projects on GitHub.
 
 ## How-To
 
