@@ -1,9 +1,11 @@
 from git import Repo
 import re
 import os
-import sys
+import argparse
 
-regex = re.compile('(?:#[^\n]*|"""(?:(?!""").)*""")', re.DOTALL)
+reg_py = re.compile('(?:#[^\n]*|"""(?:(?!""").)*""")', re.DOTALL)
+# from https://stackoverflow.com/questions/25822749/python-regex-for-matching-single-line-and-multi-line-comments
+reg_java = re.compile('(?:\/\/[^\n]*|\/\*(?:(?!\*\/).)*\*\/)', re.DOTALL)
 
 
 def get_comments(filename):
@@ -12,7 +14,10 @@ def get_comments(filename):
         for line in f.readlines():
             content += line
 
-    return regex.findall(content)
+    if lang == 'py':
+        return reg_py.findall(content)
+    elif lang == 'java':
+        return reg_java.findall(content)
 
 
 def is_empty(comment_list):
@@ -21,29 +26,34 @@ def is_empty(comment_list):
     return False
 
 
-def collect_files(directory):
+def traverse_files(directory):
     all_comments = []
     if os.path.isfile(directory):
-        if directory.endswith('.py'):
+        if directory.endswith('.' + lang):
             all_comments.append(get_comments(directory))
         else:
             return []
     else:
-        for dire in os.listdir(directory):
-            dir_comments = collect_files(directory + '/' + dire)
+        dir_list = None
+        try:
+            dir_list = os.listdir(directory)
+        except:
+            return []
+        for dire in dir_list:
+            dir_comments = traverse_files(directory + '/' + dire)
             if not is_empty(dir_comments):
                 all_comments.append(dir_comments)
     return all_comments
 
-#def remove_empty(all_comments):
 
+parser = argparse.ArgumentParser()
+parser.add_argument('repo')
+parser.add_argument("-l", "--lang", help="language")
 
-repo_path = None
-if len(sys.argv) < 2:
-    print('invalid number of arguments given')
-    sys.exit(-1)
-else:
-    repo_path = sys.argv[1]
+args = parser.parse_args()
+    
+repo_path = args.repo
+lang = args.lang
 
 git_url = 'https://github.com/'
 repo_dir = str.split(git_url + repo_path, '/')
@@ -58,6 +68,6 @@ else:
 
 print('collecting comments in ', repo_dir, '\n')
 
-all_comments = collect_files(repo_dir)
+all_comments = traverse_files(repo_dir)
 for comments in all_comments:
     print(comments)

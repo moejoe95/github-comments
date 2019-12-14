@@ -8,5 +8,10 @@ projects on GitHub.
 
 Extract comments from a python project:
 ```
-python extract_comments.py keras-team/keras
+python extract_comments.py keras-team/keras --lang py
+```
+
+Extract comments from a java project:
+```
+python extract_comments.py spring-projects/spring-boot --lang java
 ```
