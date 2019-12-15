@@ -46,6 +46,19 @@ def traverse_files(directory):
     return all_comments
 
 
+def write_to_file(comment_list):
+    if isinstance(comment_list, list):
+        for sublist in comment_list:
+            write_to_file(sublist)
+    else:
+        with open(lang + '.txt', 'a') as f:
+            f.write(comment_list)
+
+
+def get_loc(file):
+    return sum(1 for line in open(file))
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('repo')
 parser.add_argument("-l", "--lang", help="language")
@@ -68,6 +81,10 @@ else:
 
 print('collecting comments in ', repo_dir, '\n')
 
+# traverse files in repo and collect comments
 all_comments = traverse_files(repo_dir)
-for comments in all_comments:
-    print(comments)
+
+# write comments to text file
+write_to_file(all_comments)
+
+print(get_loc(lang + '.txt'), 'lines of comments written')
