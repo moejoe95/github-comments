@@ -5,9 +5,9 @@ import argparse
 
 
 class CommentExtractor:
+    # from https://stackoverflow.com/questions/25822749/python-regex-for-matching-single-line-and-multi-line-comments
     reg_py_one = re.compile('(?:#[^\n]*)', re.DOTALL)
     reg_py_mul = re.compile('("""(?:(?!""").)*""")', re.DOTALL)
-    # from https://stackoverflow.com/questions/25822749/python-regex-for-matching-single-line-and-multi-line-comments
     reg_java_one = re.compile('(?:\/\/[^\n]*)', re.DOTALL)
     reg_java_mul = re.compile('(\/\*(?:(?!\*\/).)*\*\/)', re.DOTALL)
 
@@ -39,7 +39,7 @@ class CommentExtractor:
         return False
 
 
-    def traverse_files(self, directory):
+    def extract_comments(self, directory):
         all_comments = []
         if os.path.isfile(directory):
             if directory.endswith('.' + lang):
@@ -53,7 +53,7 @@ class CommentExtractor:
             except:
                 return []
             for dire in dir_list:
-                dir_comments = self.traverse_files(directory + '/' + dire)
+                dir_comments = self.extract_comments(directory + '/' + dire)
                 if not self.is_empty(dir_comments):
                     all_comments.append(dir_comments)
         return all_comments
@@ -66,10 +66,11 @@ class CommentExtractor:
         else:
             with open(repo_dir + '.txt', 'a') as f:
                 f.write(comment_list)
+                f.write('\n\n')
 
 
     def get_loc(self, file):
-        return sum(1 for line in open(file))
+        return sum(1 for line in open(file)) - self.get_number_of_comments() # subtract newlines
 
     def get_one_liners(self):
         return self.count_one_liners
@@ -105,12 +106,12 @@ print('collecting comments in ', repo_dir, '\n')
 
 # traverse files in repo and collect comments
 extr = CommentExtractor()
-all_comments = extr.traverse_files(repo_dir)
+all_comments = extr.extract_comments(repo_dir)
 
 # write comments to text file
 extr.write_to_file(repo_dir, all_comments)
 
-print('lines of comments:', extr.get_loc(lang + '.txt'))
+print('lines of comments:', extr.get_loc(repo_dir + '.txt'))
 print('number comments:', extr.get_number_of_comments())
 print('one liners:', extr.get_one_liners())
 print('multi liners:', extr.get_mul_liners())
