@@ -1,8 +1,5 @@
-from git import Repo
 import re
 import os
-import argparse
-
 
 class CommentExtractor:
     # from https://stackoverflow.com/questions/25822749/python-regex-for-matching-single-line-and-multi-line-comments
@@ -14,6 +11,11 @@ class CommentExtractor:
     count_one_liners = 0
     count_multi_liners = 0
 
+    lang = 'py'
+
+    def __init__(self, language):
+        self.lang = language        
+
 
     def get_comments(self, filename):
         content = ''
@@ -22,10 +24,10 @@ class CommentExtractor:
                 content += line
 
         one = mul = None
-        if lang == 'py':
+        if self.lang == 'py':
             one = self.reg_py_one.findall(content)
             mul = self.reg_py_mul.findall(content)
-        elif lang == 'java':
+        elif self.lang == 'java':
             one = self.reg_java_one.findall(content)
             mul = self.reg_java_mul.findall(content)
         self.count_one_liners += len(one)
@@ -42,7 +44,7 @@ class CommentExtractor:
     def extract_comments(self, directory):
         all_comments = []
         if os.path.isfile(directory):
-            if directory.endswith('.' + lang):
+            if directory.endswith('.' + self.lang):
                 all_comments.append(self.get_comments(directory))
             else:
                 return []
@@ -80,38 +82,3 @@ class CommentExtractor:
     
     def get_number_of_comments(self):
         return self.count_multi_liners + self.count_one_liners
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('repo')
-parser.add_argument("-l", "--lang", help="language")
-
-args = parser.parse_args()
-    
-repo_path = args.repo
-lang = args.lang
-
-git_url = 'https://github.com/'
-repo_dir = str.split(git_url + repo_path, '/')
-repo_dir = str.split(repo_dir[len(repo_dir)-1], '.')
-repo_dir = repo_dir[0]
-
-if os.path.isdir(repo_dir):
-    print('repo', repo_dir, 'already exists')
-else:
-    print('cloning repo into: ' + repo_dir)
-    Repo.clone_from(git_url + repo_path, repo_dir)
-
-print('collecting comments in ', repo_dir, '\n')
-
-# traverse files in repo and collect comments
-extr = CommentExtractor()
-all_comments = extr.extract_comments(repo_dir)
-
-# write comments to text file
-extr.write_to_file(repo_dir, all_comments)
-
-print('lines of comments:', extr.get_loc(repo_dir + '.txt'))
-print('number comments:', extr.get_number_of_comments())
-print('one liners:', extr.get_one_liners())
-print('multi liners:', extr.get_mul_liners())
