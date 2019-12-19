@@ -35,6 +35,7 @@ all_comments = extractor.extract_comments(repo_dir)
 extractor.write_files()
 
 print('inline', len(extractor.get_comments('inline')))
-print('multiliner', len(extractor.get_comments('multiline')))
+print('method', len(extractor.get_comments('method')))
 print('copyright', len(extractor.get_comments('copyright')))
 print('todo', len(extractor.get_comments('todo')))
+print('class', len(extractor.get_comments('class')))

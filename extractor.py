@@ -1,5 +1,7 @@
 import re
 import os
+from re import finditer
+
 
 class CommentExtractor:
     # from https://stackoverflow.com/questions/25822749/python-regex-for-matching-single-line-and-multi-line-comments
@@ -17,22 +19,40 @@ class CommentExtractor:
         self.lang = language  
         self.repo_name = repo
         self.comments.update({'inline': []})
-        self.comments.update({'multiline': []})
+        self.comments.update({'method': []})
         self.comments.update({'copyright': []})  
         self.comments.update({'todo': []}) 
+        self.comments.update({'class': []})
 
+    
+    def get_class_line(self, content, start, end, it):
+        c = content[end]
+        while(c != '\n'):
+            c = content[start]
+            start += it
+        return content[start:end:1], start
 
-    def append_comment(self, comment_list, one):
-        for comment in comment_list:
-            if 'Copyright' in comment:
-                self.comments.get('copyright').append(comment)
-            elif 'TODO' in comment:
+    def append_comment(self, comment, content, pos, one):        
+        if one:
+            if 'TODO' in comment:
                 self.comments.get('todo').append(comment)
             else:
-                if one:
-                    self.comments.get('inline').append(comment)
-                else:
-                    self.comments.get('multiline').append(comment)
+                self.comments.get('inline').append(comment)
+        else:
+            line = None
+            if self.lang == 'java':
+                line, _ = self.get_class_line(content, 0, pos[1], 1)
+            else:
+                line, prev = self.get_class_line(content, pos[0], pos[0], -1)   
+                line, _ = self.get_class_line(content, prev, prev, -1)
+
+            if 'class' in line:
+                self.comments.get('class').append(comment)
+            elif 'copyright' in comment.lower():
+                self.comments.get('copyright').append(comment)
+            else:
+                self.comments.get('method').append(comment)
+
 
     def match_comments(self, file):
         content = ''
@@ -40,16 +60,13 @@ class CommentExtractor:
             for line in f.readlines():
                 content += line
 
-        one = mul = None
-        if self.lang == 'py':
-            one = self.reg_py_one.findall(content)
-            mul = self.reg_py_mul.findall(content)
-        elif self.lang == 'java':
-            one = self.reg_java_one.findall(content)
-            mul = self.reg_java_mul.findall(content)
+        reg_one = self.reg_py_one if self.lang == 'py' else self.reg_java_one
+        reg_mul = self.reg_py_mul if self.lang == 'py' else self.reg_java_mul
 
-        self.append_comment(one, True)
-        self.append_comment(mul, False)
+        for match in finditer(reg_one, content):
+            self.append_comment(match.group(), content, match.span(), True)
+        for match in finditer(reg_mul, content):
+            self.append_comment(match.group(), content, match.span(), False)
 
 
     def is_empty(self, comment_list):
@@ -88,9 +105,6 @@ class CommentExtractor:
                 f.write(comment_list)
                 f.write('\n\n')
 
-
-    # TODO filter empty comments
-    # TODO filter license link in one liners
 
     def get_comments(self, key):
         return self.comments.get(key)
