@@ -18,10 +18,23 @@ class CommentExtractor:
         self.repo_name = repo
         self.comments.update({'inline': []})
         self.comments.update({'multiline': []})
-        self.comments.update({'copyright': []})   
+        self.comments.update({'copyright': []})  
+        self.comments.update({'todo': []}) 
 
 
-    def get_comments(self, file):
+    def append_comment(self, comment_list, one):
+        for comment in comment_list:
+            if 'Copyright' in comment:
+                self.comments.get('copyright').append(comment)
+            elif 'TODO' in comment:
+                self.comments.get('todo').append(comment)
+            else:
+                if one:
+                    self.comments.get('inline').append(comment)
+                else:
+                    self.comments.get('multiline').append(comment)
+
+    def match_comments(self, file):
         content = ''
         with open(file) as f:
             for line in f.readlines():
@@ -35,13 +48,8 @@ class CommentExtractor:
             one = self.reg_java_one.findall(content)
             mul = self.reg_java_mul.findall(content)
 
-        self.comments.get('inline').append(one)
-
-        for comment in mul:
-            if 'Copyright' in comment:
-                self.comments.get('copyright').append(comment)
-            else:
-                self.comments.get('multiline').append(comment)
+        self.append_comment(one, True)
+        self.append_comment(mul, False)
 
 
     def is_empty(self, comment_list):
@@ -53,7 +61,7 @@ class CommentExtractor:
     def extract_comments(self, directory):
         if os.path.isfile(directory):
             if directory.endswith('.' + self.lang):
-                self.get_comments(directory)
+                self.match_comments(directory)
             else:
                 return []
         else:
@@ -84,13 +92,5 @@ class CommentExtractor:
     # TODO filter empty comments
     # TODO filter license link in one liners
 
-    def get_one_liners(self):
-        return self.comments.get('inline')
-
-
-    def get_mul_liners(self):
-        return self.comments.get('multiline')
-
-
-    def get_copyright(self):
-        return self.comments.get('copyright')
+    def get_comments(self, key):
+        return self.comments.get(key)

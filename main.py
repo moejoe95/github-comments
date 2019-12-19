@@ -34,6 +34,7 @@ all_comments = extractor.extract_comments(repo_dir)
 # write comments to text file
 extractor.write_files()
 
-print('inline', len(extractor.get_one_liners()))
-print('multiliner', len(extractor.get_mul_liners()))
-print('copyright', len(extractor.get_copyright()))
+print('inline', len(extractor.get_comments('inline')))
+print('multiliner', len(extractor.get_comments('multiline')))
+print('copyright', len(extractor.get_comments('copyright')))
+print('todo', len(extractor.get_comments('todo')))
