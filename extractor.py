@@ -8,18 +8,22 @@ class CommentExtractor:
     reg_java_one = re.compile('(?:\/\/[^\n]*)', re.DOTALL)
     reg_java_mul = re.compile('(\/\*(?:(?!\*\/).)*\*\/)', re.DOTALL)
 
-    count_one_liners = 0
-    count_multi_liners = 0
+    comments = dict()
 
-    lang = 'py'
+    lang = None
+    repo_name = None
 
-    def __init__(self, language):
-        self.lang = language        
+    def __init__(self, language, repo):
+        self.lang = language  
+        self.repo_name = repo
+        self.comments.update({'inline': []})
+        self.comments.update({'multiline': []})
+        self.comments.update({'copyright': []})   
 
 
-    def get_comments(self, filename):
+    def get_comments(self, file):
         content = ''
-        with open(filename) as f:
+        with open(file) as f:
             for line in f.readlines():
                 content += line
 
@@ -30,9 +34,14 @@ class CommentExtractor:
         elif self.lang == 'java':
             one = self.reg_java_one.findall(content)
             mul = self.reg_java_mul.findall(content)
-        self.count_one_liners += len(one)
-        self.count_multi_liners += len(mul)
-        return one + mul
+
+        self.comments.get('inline').append(one)
+
+        for comment in mul:
+            if 'Copyright' in comment:
+                self.comments.get('copyright').append(comment)
+            else:
+                self.comments.get('multiline').append(comment)
 
 
     def is_empty(self, comment_list):
@@ -42,10 +51,9 @@ class CommentExtractor:
 
 
     def extract_comments(self, directory):
-        all_comments = []
         if os.path.isfile(directory):
             if directory.endswith('.' + self.lang):
-                all_comments.append(self.get_comments(directory))
+                self.get_comments(directory)
             else:
                 return []
         else:
@@ -55,30 +63,34 @@ class CommentExtractor:
             except:
                 return []
             for dire in dir_list:
-                dir_comments = self.extract_comments(directory + '/' + dire)
-                if not self.is_empty(dir_comments):
-                    all_comments.append(dir_comments)
-        return all_comments
+                self.extract_comments(directory + '/' + dire)
 
 
-    def write_to_file(self, repo_dir, comment_list):
+    def write_files(self):
+        for key, value in self.comments.items():
+            self.write_comments_file(self.comments.get(key), key)
+
+
+    def write_comments_file(self, comment_list, key):
         if isinstance(comment_list, list):
             for sublist in comment_list:
-                self.write_to_file(repo_dir, sublist)
+                self.write_comments_file(sublist, key)
         else:
-            with open(repo_dir + '.txt', 'a') as f:
+            with open(self.repo_name + '_' + key + '.txt', 'a') as f:
                 f.write(comment_list)
                 f.write('\n\n')
 
 
-    def get_loc(self, file):
-        return sum(1 for line in open(file)) - self.get_number_of_comments() # subtract newlines
+    # TODO filter empty comments
+    # TODO filter license link in one liners
 
     def get_one_liners(self):
-        return self.count_one_liners
-    
+        return self.comments.get('inline')
+
+
     def get_mul_liners(self):
-        return self.count_multi_liners
-    
-    def get_number_of_comments(self):
-        return self.count_multi_liners + self.count_one_liners
+        return self.comments.get('multiline')
+
+
+    def get_copyright(self):
+        return self.comments.get('copyright')
