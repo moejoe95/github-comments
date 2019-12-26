@@ -15,6 +15,11 @@ class CommentExtractor:
     lang = None
     repo_name = None
 
+    comment_count = 0
+    line_count = 0
+    code_count = 0
+    number_files = 0
+
     def __init__(self, language, repo):
         self.lang = language  
         self.repo_name = repo
@@ -32,7 +37,8 @@ class CommentExtractor:
             start += it
         return content[start:end:1], start
 
-    def append_comment(self, comment, content, pos, one):        
+    def append_comment(self, comment, content, pos, one):    
+        self.comment_count += comment.count('\n')  
         if one:
             if 'TODO' in comment:
                 self.comments.get('todo').append(comment)
@@ -56,9 +62,12 @@ class CommentExtractor:
 
     def match_comments(self, file):
         content = ''
+        self.number_files += 1
         with open(file) as f:
             for line in f.readlines():
                 content += line
+                if not line.isspace():
+                    self.line_count += 1
 
         reg_one = self.reg_py_one if self.lang == 'py' else self.reg_java_one
         reg_mul = self.reg_py_mul if self.lang == 'py' else self.reg_java_mul
@@ -108,3 +117,22 @@ class CommentExtractor:
 
     def get_comments(self, key):
         return self.comments.get(key)
+
+    def get_comment_lines(self):
+        return self.comment_count
+
+
+    def get_lines(self):
+        return self.line_count
+
+    
+    def get_code_lines(self):
+        return self.line_count - self.comment_count
+
+
+    def get_line_comment_ratio(self):
+        return self.get_comment_lines() / self.get_lines()
+
+
+    def get_line_code_ratio(self):
+        return self.get_code_lines() / self.get_lines()

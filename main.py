@@ -28,14 +28,14 @@ else:
 print('collecting comments in ', repo_dir, '\n')
 
 # traverse files in repo and collect comments
-extractor = CommentExtractor(lang, repo_dir)
-all_comments = extractor.extract_comments(repo_dir)
+extr = CommentExtractor(lang, repo_dir)
+all_comments = extr.extract_comments(repo_dir)
 
 # write comments to text file
-extractor.write_files()
+#extractor.write_files()
 
-print('inline', len(extractor.get_comments('inline')))
-print('method', len(extractor.get_comments('method')))
-print('copyright', len(extractor.get_comments('copyright')))
-print('todo', len(extractor.get_comments('todo')))
-print('class', len(extractor.get_comments('class')))
+print('lines of code:', extr.get_code_lines())
+print('lines of comment:', extr.get_comment_lines())
+print('line/comment ratio:', extr.get_line_comment_ratio())
+print('line/code ratio:', extr.get_line_code_ratio())
+
