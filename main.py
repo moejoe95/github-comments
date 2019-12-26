@@ -34,8 +34,17 @@ all_comments = extr.extract_comments(repo_dir)
 # write comments to text file
 #extractor.write_files()
 
-print('lines of code:', extr.get_code_lines())
-print('lines of comment:', extr.get_comment_lines())
-print('line/comment ratio:', extr.get_line_comment_ratio())
-print('line/code ratio:', extr.get_line_code_ratio())
+print('total lines:', extr.get_line_count())
+print('lines of code:', extr.get_code_lines_count())
+print('lines of comment:', extr.get_comment_lines_count(), '\n')
 
+print('code/comment distribution:')
+print('code:', extr.get_line_code_ratio())
+print('comment:', extr.get_comment_lines_count() / extr.get_line_count(), '\n')
+
+print('distribution of comment types:')
+print('todo comments:', extr.get_comment_type_ratio('todo'))
+print('inline comments:', extr.get_comment_type_ratio('inline'))
+print('class comments/comment:', extr.get_comment_type_ratio('class'))
+print('method comments/comment:', extr.get_comment_type_ratio('method'))
+print('copyright comments/comment:', extr.get_comment_type_ratio('copyright'))

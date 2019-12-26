@@ -1,4 +1,12 @@
 .vscode
 *.txt
 keras
+pandas
+airflow
+django
+scikit-learn
+jmeter
 spring-boot
+elasticsearch
+mockito
+RxJava

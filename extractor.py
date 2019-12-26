@@ -11,11 +11,13 @@ class CommentExtractor:
     reg_java_mul = re.compile('(\/\*(?:(?!\*\/).)*\*\/)', re.DOTALL)
 
     comments = dict()
+    comment_counts = dict()
+
+    categories = ['inline', 'method', 'class', 'todo', 'copyright']
 
     lang = None
     repo_name = None
 
-    comment_count = 0
     line_count = 0
     code_count = 0
     number_files = 0
@@ -23,13 +25,12 @@ class CommentExtractor:
     def __init__(self, language, repo):
         self.lang = language  
         self.repo_name = repo
-        self.comments.update({'inline': []})
-        self.comments.update({'method': []})
-        self.comments.update({'copyright': []})  
-        self.comments.update({'todo': []}) 
-        self.comments.update({'class': []})
 
+        for cat in self.categories:
+            self.comments.update({cat: []})
+            self.comment_counts.update({cat: 0})
     
+
     def get_class_line(self, content, start, end, it):
         c = content[end]
         while(c != '\n'):
@@ -37,14 +38,16 @@ class CommentExtractor:
             start += it
         return content[start:end:1], start
 
-    def append_comment(self, comment, content, pos, one):    
-        self.comment_count += comment.count('\n')  
-        if one:
+
+    def append_comment(self, comment, content, pos, one):   
+        if one: # one-line comments
             if 'TODO' in comment:
+                self.comment_counts.update({'todo': self.comment_counts['todo']+1})
                 self.comments.get('todo').append(comment)
             else:
+                self.comment_counts.update({'inline': self.comment_counts['inline']+1})
                 self.comments.get('inline').append(comment)
-        else:
+        else: # multi-line comments
             line = None
             if self.lang == 'java':
                 line, _ = self.get_class_line(content, 0, pos[1], 1)
@@ -52,11 +55,15 @@ class CommentExtractor:
                 line, prev = self.get_class_line(content, pos[0], pos[0], -1)   
                 line, _ = self.get_class_line(content, prev, prev, -1)
 
+            newline_count = comment.count('\n') # count number of lines of comment
             if 'class' in line:
+                self.comment_counts.update({'class': self.comment_counts['class'] + newline_count})
                 self.comments.get('class').append(comment)
             elif 'copyright' in comment.lower():
+                self.comment_counts.update({'copyright': self.comment_counts['copyright'] + newline_count})
                 self.comments.get('copyright').append(comment)
             else:
+                self.comment_counts.update({'method': self.comment_counts['method'] + newline_count})
                 self.comments.get('method').append(comment)
 
 
@@ -118,21 +125,29 @@ class CommentExtractor:
     def get_comments(self, key):
         return self.comments.get(key)
 
-    def get_comment_lines(self):
-        return self.comment_count
+
+    def get_comment_count(self, key):
+        return self.comment_counts.get(key)
 
 
-    def get_lines(self):
+    def get_line_count(self):
+        ''' get total lines of files without whitespace lines '''
         return self.line_count
 
-    
-    def get_code_lines(self):
-        return self.line_count - self.comment_count
+
+    def get_comment_lines_count(self):
+        ''' get total lines of comments '''
+        return sum([v for _,v in self.comment_counts.items()])
 
 
-    def get_line_comment_ratio(self):
-        return self.get_comment_lines() / self.get_lines()
+    def get_code_lines_count(self):
+        ''' get total lines of code '''
+        return self.line_count - self.get_comment_lines_count()
 
 
     def get_line_code_ratio(self):
-        return self.get_code_lines() / self.get_lines()
+        return self.get_code_lines_count() / self.get_line_count()
+
+
+    def get_comment_type_ratio(self, key):
+        return self.get_comment_count(key) / self.get_comment_lines_count()
