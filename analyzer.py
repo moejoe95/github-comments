@@ -39,7 +39,7 @@ class Analyzer:
             'neg': sen['neg'],
             'neu': sen['neu'],
             'pos': sen['pos'],
-            'compound': sen['compound']
+            'com': sen['compound']
         }
         self.df = self.df.append(new_row, ignore_index=True)
         self.df.to_csv(self.datafile, index=False)
@@ -49,13 +49,25 @@ class Analyzer:
         self.df.sort_values(by=['lang'], inplace=True)
         print(self.df)
 
+def main():
+    analyzer = Analyzer()
+    df = analyzer.df
+    print(df)
 
-analyzer = Analyzer()
-df = analyzer.df
-print(df)
+    sum_java = df[df.lang == 'java']['lines'].sum()
+    print('sum lines java:', sum_java)
 
-sum_java = df[df.lang == 'java']['lines'].sum()
-print('sum lines java:', sum_java)
+    sum_py = df[df.lang == 'py']['lines'].sum()
+    print('sum lines pyhton:', sum_py, '\n')
 
-sum_py = df[df.lang == 'py']['lines'].sum()
-print('sum lines pyhton:', sum_py)
+    print('positive sentiment:')
+    print(df[df.com >= 0.05]['project'], '\n')
+
+    print('negative sentiment:')
+    print(df[df.com <= -0.05]['project'], '\n')
+
+    print('neutral sentiment:')
+    print(df[(df.com < 0.05) & (df.com > -0.05)]['project'], '\n')
+
+if __name__ == "__main__":
+    main()
