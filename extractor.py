@@ -146,11 +146,3 @@ class CommentExtractor:
     def get_code_lines_count(self):
         ''' get total lines of code '''
         return self.line_count - self.get_comment_lines_count()
-
-
-    def get_line_code_ratio(self):
-        return self.get_code_lines_count() / self.get_line_count()
-
-
-    def get_comment_type_ratio(self, key):
-        return self.get_comment_count(key) / self.get_comment_lines_count()

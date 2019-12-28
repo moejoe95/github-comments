@@ -3,6 +3,7 @@ import argparse
 import os
 
 from extractor import CommentExtractor
+from analyzer import Analyzer
 
 
 parser = argparse.ArgumentParser()
@@ -37,17 +38,7 @@ all_comments = extr.extract_comments(repo_dir)
 if out:
     extr.write_files(out)
 
-print('total lines:', extr.get_line_count())
-print('lines of code:', extr.get_code_lines_count())
-print('lines of comment:', extr.get_comment_lines_count(), '\n')
+an = Analyzer()
+an.add_to_dataframe(extr)
+an.print_dataframe()
 
-print('code/comment distribution:')
-print('code:', extr.get_line_code_ratio())
-print('comment:', extr.get_comment_lines_count() / extr.get_line_count(), '\n')
-
-print('distribution of comment types:')
-print('todo comments:', extr.get_comment_type_ratio('todo'))
-print('inline comments:', extr.get_comment_type_ratio('inline'))
-print('class comments/comment:', extr.get_comment_type_ratio('class'))
-print('method comments/comment:', extr.get_comment_type_ratio('method'))
-print('copyright comments/comment:', extr.get_comment_type_ratio('copyright'))
