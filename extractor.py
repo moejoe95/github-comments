@@ -129,6 +129,10 @@ class CommentExtractor:
         return self.comments.get(key)
 
 
+    def get_all_comments(self):
+        return [com for _, com_list in self.comments.items() for com in com_list]
+
+
     def get_number_comment(self, key):
         return len(self.comments.get(key))
 

@@ -1,4 +1,6 @@
 import pandas as pd
+from sentiment_analysis import SentimentAnalysis
+
 
 class Analyzer:
 
@@ -13,6 +15,9 @@ class Analyzer:
         if self.df['project'].isin([ex.repo_name]).any():
             print(ex.repo_name, 'already in dataframe...\n')
             return
+
+        sa = SentimentAnalysis(ex)
+        sen = sa.getAvgSentiment()
 
         new_row = {
             'project': ex.repo_name, 
@@ -30,7 +35,11 @@ class Analyzer:
             'method': ex.get_number_comment('method'),
             'method-lines': ex.get_comment_line_count('method'),
             'copyright': ex.get_number_comment('copyright'),
-            'copyright-lines': ex.get_comment_line_count('copyright')
+            'copyright-lines': ex.get_comment_line_count('copyright'),
+            'neg': sen['neg'],
+            'neu': sen['neu'],
+            'pos': sen['pos'],
+            'compound': sen['compound']
         }
         self.df = self.df.append(new_row, ignore_index=True)
         self.df.to_csv(self.datafile, index=False)
