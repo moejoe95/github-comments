@@ -7,6 +7,6 @@ django
 scikit-learn
 jmeter
 spring-boot
-elasticsearch
+okhttp
 mockito
 RxJava

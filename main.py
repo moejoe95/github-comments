@@ -41,4 +41,3 @@ if out:
 an = Analyzer()
 an.add_to_dataframe(extr)
 an.print_dataframe()
-

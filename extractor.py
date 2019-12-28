@@ -129,13 +129,21 @@ class CommentExtractor:
         return self.comments.get(key)
 
 
-    def get_comment_count(self, key):
-        return self.comment_counts.get(key)
+    def get_number_comment(self, key):
+        return len(self.comments.get(key))
+
+
+    def get_number_comments(self):
+        return sum([len(v) for _,v in self.comments.items()])
 
 
     def get_line_count(self):
         ''' get total lines of files without whitespace lines '''
         return self.line_count
+
+
+    def get_comment_line_count(self, key):
+        return self.comment_counts.get(key)
 
 
     def get_comment_lines_count(self):
