@@ -31,12 +31,15 @@ class CommentExtractor:
             self.comment_counts.update({cat: 0})
     
 
-    def get_class_line(self, content, start, end, it):
+    def get_class_line(self, content, start, it):
+        end = start
         c = content[end]
-        while(c != '\n'):
-            c = content[start]
-            start += it
-        return content[start:end:1], start
+        while c != '\n' and end >= 0 and end < len(content):
+            c = content[end]
+            end += it
+        if end < start:
+            return content[end:start:1], end
+        return content[start:end:1], end
 
 
     def append_comment(self, comment, content, pos, one):   
@@ -50,10 +53,10 @@ class CommentExtractor:
         else: # multi-line comments
             line = None
             if self.lang == 'java':
-                line, _ = self.get_class_line(content, 0, pos[1], 1)
+                line, _ = self.get_class_line(content, pos[1]+1, 1)
             else:
-                line, prev = self.get_class_line(content, pos[0], pos[0], -1)   
-                line, _ = self.get_class_line(content, prev, prev, -1)
+                line, prev = self.get_class_line(content, pos[0]-1, -1)   
+                line, _ = self.get_class_line(content, prev, -1)
 
             newline_count = comment.count('\n') # count number of lines of comment
             if 'class' in line:
@@ -107,17 +110,17 @@ class CommentExtractor:
                 self.extract_comments(directory + '/' + dire)
 
 
-    def write_files(self):
+    def write_files(self, outfile):
         for key, value in self.comments.items():
-            self.write_comments_file(self.comments.get(key), key)
+            self.write_comments_file(self.comments.get(key), key, outfile)
 
 
-    def write_comments_file(self, comment_list, key):
+    def write_comments_file(self, comment_list, key, outfile):
         if isinstance(comment_list, list):
             for sublist in comment_list:
-                self.write_comments_file(sublist, key)
+                self.write_comments_file(sublist, key, outfile)
         else:
-            with open(self.repo_name + '_' + key + '.txt', 'a') as f:
+            with open(outfile + '_' + key + '.txt', 'a') as f:
                 f.write(comment_list)
                 f.write('\n\n')
 

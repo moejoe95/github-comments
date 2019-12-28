@@ -8,11 +8,13 @@ from extractor import CommentExtractor
 parser = argparse.ArgumentParser()
 parser.add_argument('repo')
 parser.add_argument("-l", "--lang", help="language")
+parser.add_argument("-o", "--out", help="outputfile")
 
 args = parser.parse_args()
     
 repo_path = args.repo
 lang = args.lang
+out = args.out
 
 git_url = 'https://github.com/'
 repo_dir = str.split(git_url + repo_path, '/')
@@ -32,7 +34,8 @@ extr = CommentExtractor(lang, repo_dir)
 all_comments = extr.extract_comments(repo_dir)
 
 # write comments to text file
-#extractor.write_files()
+if out:
+    extr.write_files(out)
 
 print('total lines:', extr.get_line_count())
 print('lines of code:', extr.get_code_lines_count())
