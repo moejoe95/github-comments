@@ -6,12 +6,17 @@ projects on GitHub.
 
 ## How-To
 
-Extract comments from a python project:
+Extract and save comments from a python project to a pandas dataframe:
 ```
-python extract_comments.py keras-team/keras --lang py
+python main.py keras-team/keras --lang py
 ```
 
-Extract comments from a java project:
+Extract and save comments from a java project to a pandas dataframe:
 ```
-python extract_comments.py spring-projects/spring-boot --lang java
+python main.py spring-projects/spring-boot --lang java
+```
+
+To make some analysis on the dataframe:
+```
+python analyzer.py
 ```

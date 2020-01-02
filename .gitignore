@@ -10,3 +10,4 @@ spring-boot
 okhttp
 mockito
 RxJava
+*.pyc

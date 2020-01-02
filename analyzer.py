@@ -1,5 +1,8 @@
 import pandas as pd
 from sentiment_analysis import SentimentAnalysis
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Analyzer:
@@ -60,13 +63,26 @@ def main():
     sum_py = df[df.lang == 'py']['lines'].sum()
     print('sum lines pyhton:', sum_py, '\n')
 
-    print('positive sentiment:')
+    cpc = pd.DataFrame({'cpc': (df['lo-comment'] / df['lo-code']).tolist()}, index=df['project'])
+    cpc = cpc.sort_values(by='cpc', ascending=False)
+    pl = cpc.plot.bar(rot=0, title='lines of comment / lines of code')
+    pl.set_ylabel('lo-comment / lo-code')
+    pl.set_xlabel('projects')
+    plt.show()
+
+    sen = df.sort_values(by='com', ascending=False)
+    pl = sen.plot.bar(y='com',x='project', rot=0, title='Sentiment Analysis')
+    pl.set_ylabel('sentiment compound')
+    pl.set_xlabel('projects')
+    plt.show()
+
+    print('projects with positive sentiment:')
     print(df[df.com >= 0.05]['project'], '\n')
 
-    print('negative sentiment:')
+    print('projects with negative sentiment:')
     print(df[df.com <= -0.05]['project'], '\n')
 
-    print('neutral sentiment:')
+    print('project with neutral sentiment:')
     print(df[(df.com < 0.05) & (df.com > -0.05)]['project'], '\n')
 
 if __name__ == "__main__":
