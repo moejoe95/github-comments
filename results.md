@@ -3,7 +3,7 @@
 ## Python projects
 
 project | total lines | lo-code | lo-comment 
---- | ---: | ---: | ---: | ---:
+--- | ---: | ---: | ---: |
 airflow | 198211 | 135806 | 62405 
 django | 293604 | 246316 | 47288
 pandas | 346242 | 259166 | 87076 |
@@ -14,7 +14,7 @@ keras | 64507 | 44857 | 19650
 ## Java projects
 
 project | total lines | lo-code | lo-comment 
---- | ---: | ---: | ---: | ---:
+--- | ---: | ---: | ---: |
 jmeter | 210262 | 142261 | 68001
 mockito | 67773 | 49751 | 18022
 RxJava | 369438 | 296142 | 73296
