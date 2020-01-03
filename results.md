@@ -24,12 +24,14 @@ okhttp | 41173 | 35527 | 5646
 
 ## Figures
 
-![comment/code ratio](./img/cpc.png)
+![](./img/comment_code_ratio.png)
 
-![sentiment analysis](./img/sen.png)
+![](./img/comment_code_ratio_copy.png)
 
-![pie java](./img/pie_java.png)
+![](./img/comment_language.png)
 
-![pie python](./img/pie_python.png)
+![](./img/java_pie.png)
 
-![types_per_lang](./img/types_per_lang.png)
+![](./img/python_pie.png)
+
+![](./img/sentiment.png)
