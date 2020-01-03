@@ -27,3 +27,9 @@ okhttp | 41173 | 35527 | 5646
 ![comment/code ratio](./img/cpc.png)
 
 ![sentiment analysis](./img/sen.png)
+
+![pie java](./img/pie_java.png)
+
+![pie python](./img/pie_python.png)
+
+![types_per_lang](./img/types_per_lang.png)

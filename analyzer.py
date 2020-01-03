@@ -52,6 +52,45 @@ class Analyzer:
         self.df.sort_values(by=['lang'], inplace=True)
         print(self.df)
 
+    def plotCommentCodeBarChart(self, comments, title):
+        cpc = pd.DataFrame({'cpc': (comments / self.df['lo-code']).tolist()}, index=self.df['project'])
+        cpc = cpc.sort_values(by='cpc', ascending=False)
+        pl = cpc.plot.bar(rot=0, title=title)
+        pl.set_xlabel('projects')
+        plt.show()
+
+    def plotSentimentBarChart(self):
+        sen = self.df.sort_values(by='com', ascending=False)
+        pl = sen.plot.bar(y='com',x='project', rot=0, title='Sentiment Analysis')
+        pl.set_ylabel('sentiment compound')
+        pl.set_xlabel('projects')
+        plt.show()
+
+    def plotCommentDistribution(self, lang):
+        comment_df = self.df[self.df.lang == lang][['todo-lines','inline-lines', 'method-lines', 'copyright-lines', 'class-lines']].sum()
+        pl = comment_df.plot.pie()
+        plt.show()
+
+    def plotOverviewBarChart(self):
+        comment_java = self.df[self.df.lang == 'java']['lo-comment'].sum()
+        comment_py = self.df[self.df.lang == 'py']['lo-comment'].sum()
+        objects = ('Java', 'Python')
+        y_pos = np.arange(len(objects))
+
+        plt.bar(y_pos, [comment_java, comment_py], align='center', alpha=0.5)
+        plt.xticks(y_pos, objects)
+        plt.ylabel('lines')
+        plt.title('Total lines of comments')
+
+        plt.show()
+
+    def plotOverviewStackedBarChart(self):
+
+        test5 = self.df.groupby(['lang'])['todo-lines', 'inline-lines', 'method-lines', 'class-lines', 'copyright-lines'].sum()
+
+        test5.plot(kind='bar', stacked=True)
+        plt.show()
+
 def main():
     analyzer = Analyzer()
     df = analyzer.df
@@ -63,18 +102,15 @@ def main():
     sum_py = df[df.lang == 'py']['lines'].sum()
     print('sum lines pyhton:', sum_py, '\n')
 
-    cpc = pd.DataFrame({'cpc': (df['lo-comment'] / df['lo-code']).tolist()}, index=df['project'])
-    cpc = cpc.sort_values(by='cpc', ascending=False)
-    pl = cpc.plot.bar(rot=0, title='lines of comment / lines of code')
-    pl.set_ylabel('lo-comment / lo-code')
-    pl.set_xlabel('projects')
-    plt.show()
+    analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
+    analyzer.plotCommentCodeBarChart(df['lo-comment']-df['copyright-lines'], 'lo-comments / lo-code without copyright comments')
+    analyzer.plotSentimentBarChart()
 
-    sen = df.sort_values(by='com', ascending=False)
-    pl = sen.plot.bar(y='com',x='project', rot=0, title='Sentiment Analysis')
-    pl.set_ylabel('sentiment compound')
-    pl.set_xlabel('projects')
-    plt.show()
+    analyzer.plotCommentDistribution('java')
+    analyzer.plotCommentDistribution('py')
+
+    analyzer.plotOverviewBarChart()
+    analyzer.plotOverviewStackedBarChart()
 
     print('projects with positive sentiment:')
     print(df[df.com >= 0.05]['project'], '\n')
