@@ -2,6 +2,17 @@ import re
 import os
 from re import finditer
 
+# constants
+categories = ['inline', 'method', 'class', 'todo', 'header', 'other']
+INLINE = 'inline'
+METHOD = 'method'
+CLASS = 'class'
+TODO = 'todo'
+HEADER = 'header'
+OTHER = 'other'
+JAVA = 'java'
+PYTHON = 'py'
+
 
 class CommentExtractor:
     # from https://stackoverflow.com/questions/25822749/python-regex-for-matching-single-line-and-multi-line-comments
@@ -9,11 +20,13 @@ class CommentExtractor:
     reg_py_mul = re.compile('("""(?:(?!""").)*""")', re.DOTALL)
     reg_java_one = re.compile('(?:\/\/[^\n]*)', re.DOTALL)
     reg_java_mul = re.compile('(\/\*(?:(?!\*\/).)*\*\/)', re.DOTALL)
+    reg_java_method = re.compile('^(private|public|protected)\s.+\(.*\)\s*{$', re.DOTALL)
+    reg_py_method = re.compile('^def\s.+\(.*\)\s*:$', re.DOTALL)
+    reg_java_class = re.compile('^(private|protected|public)\s(class|interface)\s.*\{$', re.DOTALL)
+    reg_py_class = re.compile('^class\s.*:$', re.DOTALL)
 
     comments = dict()
     comment_counts = dict()
-
-    categories = ['inline', 'method', 'class', 'todo', 'copyright']
 
     lang = None
     repo_name = None
@@ -26,48 +39,57 @@ class CommentExtractor:
         self.lang = language  
         self.repo_name = repo
 
-        for cat in self.categories:
+        for cat in categories:
             self.comments.update({cat: []})
             self.comment_counts.update({cat: 0})
     
 
     def get_class_line(self, content, start, it):
         end = start
+        if end >= len(content):
+            end = len(content)-1
         c = content[end]
         while c != '\n' and end >= 0 and end < len(content):
             c = content[end]
             end += it
         if end < start:
-            return content[end:start:1], end
-        return content[start:end:1], end
+            return content[end:start+1:1], end
+        return content[start:end+1:1], end
 
 
     def append_comment(self, comment, content, pos, one):   
         if one: # one-line comments
-            if 'TODO' in comment:
-                self.comment_counts.update({'todo': self.comment_counts['todo']+1})
-                self.comments.get('todo').append(comment)
-            else:
-                self.comment_counts.update({'inline': self.comment_counts['inline']+1})
-                self.comments.get('inline').append(comment)
+            if TODO.upper() in comment: # todo comments
+                self.comment_counts.update({TODO: self.comment_counts[TODO]+1})
+                self.comments.get(TODO).append(comment)
+            else: # inline comments
+                self.comment_counts.update({INLINE: self.comment_counts[INLINE]+1})
+                self.comments.get(INLINE).append(comment)
         else: # multi-line comments
             line = None
-            if self.lang == 'java':
+            if self.lang == JAVA:
                 line, _ = self.get_class_line(content, pos[1]+1, 1)
             else:
                 line, prev = self.get_class_line(content, pos[0]-1, -1)   
                 line, _ = self.get_class_line(content, prev, -1)
 
             newline_count = comment.count('\n') # count number of lines of comment
-            if 'class' in line:
-                self.comment_counts.update({'class': self.comment_counts['class'] + newline_count})
-                self.comments.get('class').append(comment)
-            elif 'copyright' in comment.lower():
-                self.comment_counts.update({'copyright': self.comment_counts['copyright'] + newline_count})
-                self.comments.get('copyright').append(comment)
-            else:
-                self.comment_counts.update({'method': self.comment_counts['method'] + newline_count})
-                self.comments.get('method').append(comment)
+            line = line.strip()
+            if self.reg_java_class.match(line) or self.reg_py_class.match(line): # class or interface comments
+                self.comment_counts.update({CLASS: self.comment_counts[CLASS] + newline_count})
+                self.comments.get(CLASS).append(comment)
+            elif pos[0] <= 1: # header comment
+                self.comment_counts.update({HEADER: self.comment_counts[HEADER] + newline_count})
+                self.comments.get(HEADER).append(comment)
+            elif self.reg_java_method.match(line) or self.reg_py_method.match(line): # method comment
+                self.comment_counts.update({METHOD: self.comment_counts[METHOD] + newline_count})
+                self.comments.get(METHOD).append(comment)
+            elif TODO.upper() in comment: # todo comments
+                self.comment_counts.update({TODO: self.comment_counts[TODO]+1})
+                self.comments.get(TODO).append(comment)
+            else: # other comments
+                self.comment_counts.update({OTHER: self.comment_counts[OTHER] + newline_count})
+                self.comments.get(OTHER).append(comment)
 
 
     def match_comments(self, file):
@@ -79,11 +101,27 @@ class CommentExtractor:
                 if not line.isspace():
                     self.line_count += 1
 
-        reg_one = self.reg_py_one if self.lang == 'py' else self.reg_java_one
-        reg_mul = self.reg_py_mul if self.lang == 'py' else self.reg_java_mul
+        reg_one = self.reg_py_one if self.lang == PYTHON else self.reg_java_one
+        reg_mul = self.reg_py_mul if self.lang == PYTHON else self.reg_java_mul
 
-        for match in finditer(reg_one, content):
-            self.append_comment(match.group(), content, match.span(), True)
+        it = finditer(reg_one, content)
+        i = 0
+        prev_pos = -1
+        com = ''
+        start = 0
+        for match in it:
+            if i == 0:
+                start = match.regs[0][0]
+                prev_pos = match.regs[0][0]-1
+            if prev_pos+2 >= match.regs[0][0]:
+                com += match.group() + '\n'
+                prev_pos = match.regs[0][1]
+            else:
+                if i <= 1:
+                    self.append_comment(match.group(), content, match.span(), True)
+                else:
+                    self.append_comment(com, content, [start, match.regs[0][1]], False)
+            i += 1
         for match in finditer(reg_mul, content):
             self.append_comment(match.group(), content, match.span(), False)
 

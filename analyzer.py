@@ -3,6 +3,7 @@ from sentiment_analysis import SentimentAnalysis
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
+import extractor as const
 
 
 class Analyzer:
@@ -37,8 +38,10 @@ class Analyzer:
             'class-lines': ex.get_comment_line_count('class'),
             'method': ex.get_number_comment('method'),
             'method-lines': ex.get_comment_line_count('method'),
-            'copyright': ex.get_number_comment('copyright'),
-            'copyright-lines': ex.get_comment_line_count('copyright'),
+            'header': ex.get_number_comment('header'),
+            'header-lines': ex.get_comment_line_count('header'),
+            'other': ex.get_number_comment('other'),
+            'other-lines': ex.get_comment_line_count('other'),
             'neg': sen['neg'],
             'neu': sen['neu'],
             'pos': sen['pos'],
@@ -67,7 +70,7 @@ class Analyzer:
         plt.show()
 
     def plotCommentDistribution(self, lang):
-        comment_df = self.df[self.df.lang == lang][['todo-lines','inline-lines', 'method-lines', 'copyright-lines', 'class-lines']].sum()
+        comment_df = self.df[self.df.lang == lang][const.categories].sum()
         pl = comment_df.plot.pie()
         plt.show()
 
@@ -86,7 +89,7 @@ class Analyzer:
 
     def plotOverviewStackedBarChart(self):
 
-        test5 = self.df.groupby(['lang'])['todo-lines', 'inline-lines', 'method-lines', 'class-lines', 'copyright-lines'].sum()
+        test5 = self.df.groupby(['lang'])[const.categories].sum()
 
         test5.plot(kind='bar', stacked=True)
         plt.show()
@@ -103,7 +106,7 @@ def main():
     print('sum lines pyhton:', sum_py, '\n')
 
     analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
-    analyzer.plotCommentCodeBarChart(df['lo-comment']-df['copyright-lines'], 'lo-comments / lo-code without copyright comments')
+    analyzer.plotCommentCodeBarChart(df['lo-comment']-df['header-lines'], 'lo-comments / lo-code without header comments')
     analyzer.plotSentimentBarChart()
 
     analyzer.plotCommentDistribution('java')
