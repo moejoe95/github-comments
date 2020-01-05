@@ -53,8 +53,11 @@ class CommentExtractor:
             c = content[end]
             end += it
         if end < start:
-            return content[end:start+1:1], end
-        return content[start:end+1:1], end
+            return content[end:start+1], end
+        line = content[start:end+1]
+        while line.startswith('@'):
+            line, _ = self.get_class_line(content, end, it)
+        return line, end
 
 
     def append_comment(self, comment, content, pos, one):   

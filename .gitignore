@@ -10,4 +10,5 @@ spring-boot
 okhttp
 mockito
 RxJava
+dubbo
 *.pyc
