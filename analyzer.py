@@ -32,8 +32,6 @@ class Analyzer:
             'number-comments': ex.get_number_comments(),
             'todo': ex.get_number_comment('todo'),
             'todo-lines': ex.get_comment_line_count('todo'),
-            'inline': ex.get_number_comment('inline'),
-            'inline-lines': ex.get_comment_line_count('inline'),
             'class': ex.get_number_comment('class'),
             'class-lines': ex.get_comment_line_count('class'),
             'method': ex.get_number_comment('method'),
