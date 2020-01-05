@@ -40,4 +40,4 @@ for argrepo in args.repo:
 
     an = Analyzer()
     an.add_to_dataframe(extr)
-    an.print_dataframe()
+    #an.print_dataframe()

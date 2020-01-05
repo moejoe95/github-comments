@@ -19,9 +19,9 @@ class CommentExtractor:
     reg_py_mul = re.compile('("""(?:(?!""").)*""")', re.DOTALL)
     reg_java_one = re.compile('(?:\/\/[^\n]*)', re.DOTALL)
     reg_java_mul = re.compile('(\/\*(?:(?!\*\/).)*\*\/)', re.DOTALL)
-    reg_java_method = re.compile('^(private|public|protected)\s.+\(.*\)\s*{$', re.DOTALL)
+    reg_java_method = re.compile('^((private|public|protected)\s)?.+\(.*', re.DOTALL)
     reg_py_method = re.compile('^def\s.+\(.*\)\s*:$', re.DOTALL)
-    reg_java_class = re.compile('^((private|protected|public)\s)?(static)?(class|@?interface|enum)\s.*', re.DOTALL)
+    reg_java_class = re.compile('^((private|protected|public)\s)?((static|abstract|final)\s)?(class|@?interface|enum)\s.*', re.DOTALL)
     reg_py_class = re.compile('^class\s.*:$', re.DOTALL)
 
     comments = dict()
@@ -43,6 +43,13 @@ class CommentExtractor:
             self.comment_counts.update({cat: 0})
     
 
+    def match_class_or_method(self, line):
+        return (not self.reg_java_class.match(line)  \
+        and not self.reg_java_method.match(line) \
+        ) \
+        and line
+
+
     def get_prev_or_next_code_line(self, content, start, it, stopchar='\n'):
         end = start
         if end >= len(content):
@@ -52,15 +59,15 @@ class CommentExtractor:
             c = content[end]
             end += it
         if end < start:
-            return content[end:start+1], end
+            return content[end+1:start+1], end
         line = content[start:end+1]
         # skip annotations in java code
-        startline = line
+        line = line.strip()
         if line.startswith('@'):
-            while (not self.reg_java_class.match(line) and not self.reg_java_method.match(line)) and line:
+            while self.match_class_or_method(line):
                 line, prev = self.get_prev_or_next_code_line(content, end, it)
                 end = prev
-        return line.strip(), end
+        return line, end
 
 
     def get_code_line(self, content, pos):
@@ -73,7 +80,7 @@ class CommentExtractor:
         return line.strip()
         
 
-    def append_comment(self, comment, content, pos):   
+    def append_comment(self, comment, content, pos, one, file):   
         newline_count = comment.count('\n') # count number of lines of comment
         line = self.get_code_line(content, pos)
 
@@ -86,6 +93,11 @@ class CommentExtractor:
         elif TODO.upper() in comment: 
             self.comment_counts.update({TODO: self.comment_counts[TODO]+1})
             self.comments.get(TODO).append(comment)
+
+        # other one line comment
+        elif one:
+            self.comment_counts.update({OTHER: self.comment_counts[OTHER] + newline_count})
+            self.comments.get(OTHER).append(comment)
 
         # class or interface comments
         elif self.reg_java_class.match(line) or self.reg_py_class.match(line): 
@@ -128,13 +140,15 @@ class CommentExtractor:
                 com += match.group() + '\n'
                 prev_pos = match.regs[0][1]
             else:
+                if com.startswith('//www.apache.org/licenses'):
+                    continue
                 if i <= 1:
-                    self.append_comment(match.group(), content, match.span())
+                    self.append_comment(match.group(), content, match.span(), True, file)
                 else:
-                    self.append_comment(com, content, [start, match.regs[0][1]])
+                    self.append_comment(com, content, [start, match.regs[0][1]], True, file)
             i += 1
         for match in finditer(reg_mul, content):
-            self.append_comment(match.group(), content, match.span())
+            self.append_comment(match.group(), content, match.span(), False, file)
 
 
     def is_empty(self, comment_list):
