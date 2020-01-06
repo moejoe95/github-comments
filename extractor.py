@@ -16,11 +16,11 @@ PYTHON = 'py'
 class CommentExtractor:
     # from https://stackoverflow.com/questions/25822749/python-regex-for-matching-single-line-and-multi-line-comments
     reg_py_one = re.compile('(?:#[^\n]*)', re.DOTALL)
-    reg_py_mul = re.compile('("""(?:(?!""").)*""")', re.DOTALL)
+    reg_py_mul = re.compile('^\s*("""(?:(?!""").)*""")', re.DOTALL)
     reg_java_one = re.compile('(?:\/\/[^\n]*)', re.DOTALL)
     reg_java_mul = re.compile('(\/\*(?:(?!\*\/).)*\*\/)', re.DOTALL)
     reg_java_method = re.compile('^((private|public|protected)\s)?.+\(.*', re.DOTALL)
-    reg_py_method = re.compile('^def\s.+\(.*\)\s*:$', re.DOTALL)
+    reg_py_method = re.compile('.*[^\(-]\)\s*:.*', re.DOTALL)
     reg_java_class = re.compile('^((private|protected|public)\s)?((static|abstract|final)\s)?(class|@?interface|enum)\s.*', re.DOTALL)
     reg_py_class = re.compile('^class\s.*:$', re.DOTALL)
 
@@ -58,7 +58,7 @@ class CommentExtractor:
         while c != stopchar and end >= 0 and end < len(content):
             c = content[end]
             end += it
-        if end < start:
+        if end <= start:
             return content[end+1:start+1], end
         line = content[start:end+1]
         # skip annotations in java code
@@ -76,7 +76,7 @@ class CommentExtractor:
             line, _ = self.get_prev_or_next_code_line(content, pos[1]+1, 1)
         else:
             line, prev = self.get_prev_or_next_code_line(content, pos[0]-1, -1)   
-            line, _ = self.get_prev_or_next_code_line(content, prev, -1)
+            line, _ = self.get_prev_or_next_code_line(content, prev-1, -1)
         return line.strip()
         
 
@@ -111,8 +111,12 @@ class CommentExtractor:
 
         # other comments
         else: 
-            self.comment_counts.update({OTHER: self.comment_counts[OTHER] + newline_count})
-            self.comments.get(OTHER).append(comment)
+            if line.startswith('#'):
+                self.comment_counts.update({HEADER: self.comment_counts[HEADER] + newline_count})
+                self.comments.get(HEADER).append(comment)
+            else:
+                self.comment_counts.update({OTHER: self.comment_counts[OTHER] + newline_count})
+                self.comments.get(OTHER).append(comment)
 
 
     def match_comments(self, file):
