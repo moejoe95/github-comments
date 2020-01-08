@@ -1,6 +1,7 @@
 from git import Repo
 import argparse
 import os
+import requests
 
 from extractor import CommentExtractor
 from analyzer import Analyzer
@@ -38,6 +39,9 @@ for argrepo in args.repo:
     if out:
         extr.write_files(out)
 
+    meta_req = requests.get('https://api.github.com/repos/' + repo_path)
+    meta_data = meta_req.json()
+
     an = Analyzer()
-    an.add_to_dataframe(extr)
+    an.add_to_dataframe(extr, meta_data)
     #an.print_dataframe()

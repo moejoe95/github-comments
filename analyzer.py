@@ -15,7 +15,7 @@ class Analyzer:
         self.df = pd.read_csv(self.datafile, index_col=False)
 
 
-    def add_to_dataframe(self, ex):
+    def add_to_dataframe(self, ex, meta_data):
         if self.df['project'].isin([ex.repo_name]).any():
             self.df = self.df[self.df.project != ex.repo_name]
 
@@ -42,8 +42,13 @@ class Analyzer:
             'neg': sen['neg'],
             'neu': sen['neu'],
             'pos': sen['pos'],
-            'com': sen['compound']
+            'com': sen['compound'],
+            'stars': meta_data['stargazers_count'],
+            'forks': meta_data['forks_count'],
+            'size': meta_data['size'],
+            'subscribers': meta_data['subscribers_count']
         }
+
         self.df = self.df.append(new_row, ignore_index=True)
         self.df.to_csv(self.datafile, index=False)
 
