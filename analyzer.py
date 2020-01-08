@@ -96,6 +96,23 @@ class Analyzer:
         test5.plot(kind='bar', stacked=True)
         plt.show()
 
+    def plotAvgCommentLinesperCol(self, col):
+        comment_java = self.df[self.df.lang == 'java']['lo-comment']
+        comment_py = self.df[self.df.lang == 'py']['lo-comment']
+        objects = ('Java', 'Python')
+
+        y_pos = np.arange(len(objects))
+
+        comment_java = comment_java / self.df[self.df.lang == 'java'][col]
+        comment_py = comment_py / self.df[self.df.lang == 'py'][col]
+
+        plt.bar(y_pos, [comment_java.sum(), comment_py.sum()], align='center', alpha=0.5)
+        plt.xticks(y_pos, objects)
+        plt.ylabel('lo-comment / ' + col)
+        plt.title('Avg. lo-comment per ' + col)
+        plt.show()
+
+
 def main():
     analyzer = Analyzer()
     df = analyzer.df
@@ -106,7 +123,7 @@ def main():
 
     sum_py = df[df.lang == 'py']['lines'].sum()
     print('sum lines pyhton:', sum_py, '\n')
-
+    
     analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
     analyzer.plotCommentCodeBarChart(df['lo-comment']-df['header-lines'], 'lo-comments / lo-code without header comments')
     analyzer.plotSentimentBarChart()
@@ -116,6 +133,10 @@ def main():
 
     analyzer.plotOverviewBarChart()
     analyzer.plotOverviewStackedBarChart()
+    
+    analyzer.plotAvgCommentLinesperCol('stars')
+    analyzer.plotAvgCommentLinesperCol('forks')
+    analyzer.plotAvgCommentLinesperCol('subscribers')
 
     print('projects with positive sentiment:')
     print(df[df.com >= 0.05]['project'], '\n')
