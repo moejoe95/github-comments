@@ -3,7 +3,7 @@ import os
 from re import finditer
 
 # constants
-categories = ['method', 'class', 'todo', 'header', 'other']
+categories = ['method', 'class', 'header','todo', 'other']
 METHOD = 'method'
 CLASS = 'class'
 TODO = 'todo'
@@ -199,6 +199,13 @@ class CommentExtractor:
     def get_all_comments(self):
         return [com for _, com_list in self.comments.items() for com in com_list]
 
+    def get_avg_comment_len(self):
+        total_len = 0
+        i = 0
+        for com in self.get_all_comments():
+            total_len += len(com)
+            i += 1
+        return total_len / i
 
     def get_number_comment(self, key):
         return len(self.comments.get(key))

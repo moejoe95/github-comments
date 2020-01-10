@@ -39,6 +39,7 @@ class Analyzer:
             'header-lines': ex.get_comment_line_count('header'),
             'other': ex.get_number_comment('other'),
             'other-lines': ex.get_comment_line_count('other'),
+            'avg-len': ex.get_avg_comment_len(),
             'neg': sen['neg'],
             'neu': sen['neu'],
             'pos': sen['pos'],
@@ -64,6 +65,15 @@ class Analyzer:
         pl.set_xlabel('projects')
         plt.show()
 
+
+    def plotStarBarChart(self):
+        cpc = pd.DataFrame({'stars': (self.df['stars']).tolist(), 'forks': (self.df['forks']).tolist()}, index=self.df['project'])
+        cpc = cpc.sort_values(by='stars', ascending=False)
+        pl = cpc.plot.bar(rot=0, title='Stars/Forks on GitHub')
+        pl.set_xlabel('projects')
+        plt.show()
+
+
     def plotSentimentBarChart(self):
         sen = self.df.sort_values(by='com', ascending=False)
         pl = sen.plot.bar(y='com',x='project', rot=0, title='Sentiment Analysis')
@@ -76,16 +86,16 @@ class Analyzer:
         pl = comment_df.plot.pie()
         plt.show()
 
-    def plotOverviewBarChart(self):
-        comment_java = self.df[self.df.lang == 'java']['lo-comment'].sum()
-        comment_py = self.df[self.df.lang == 'py']['lo-comment'].sum()
+    def plotOverviewBarChart(self, col, titel, yaxis):
+        comment_java = self.df[self.df.lang == 'java'][col].sum() / 5
+        comment_py = self.df[self.df.lang == 'py'][col].sum() / 5
         objects = ('Java', 'Python')
         y_pos = np.arange(len(objects))
 
         plt.bar(y_pos, [comment_java, comment_py], align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
-        plt.ylabel('lines')
-        plt.title('Total lines of comments')
+        plt.ylabel(yaxis)
+        plt.title(titel)
 
         plt.show()
 
@@ -94,22 +104,6 @@ class Analyzer:
         test5 = self.df.groupby(['lang'])[const.categories].sum()
 
         test5.plot(kind='bar', stacked=True)
-        plt.show()
-
-    def plotAvgCommentLinesperCol(self, col):
-        comment_java = self.df[self.df.lang == 'java']['lo-comment']
-        comment_py = self.df[self.df.lang == 'py']['lo-comment']
-        objects = ('Java', 'Python')
-
-        y_pos = np.arange(len(objects))
-
-        comment_java = comment_java / self.df[self.df.lang == 'java'][col]
-        comment_py = comment_py / self.df[self.df.lang == 'py'][col]
-
-        plt.bar(y_pos, [comment_java.sum(), comment_py.sum()], align='center', alpha=0.5)
-        plt.xticks(y_pos, objects)
-        plt.ylabel('lo-comment / ' + col)
-        plt.title('Avg. lo-comment per ' + col)
         plt.show()
 
 
@@ -124,28 +118,18 @@ def main():
     sum_py = df[df.lang == 'py']['lines'].sum()
     print('sum lines pyhton:', sum_py, '\n')
     
-    analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
-    analyzer.plotCommentCodeBarChart(df['lo-comment']-df['header-lines'], 'lo-comments / lo-code without header comments')
-    analyzer.plotSentimentBarChart()
+    #analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
+    #analyzer.plotCommentCodeBarChart(df['lo-comment']-df['header-lines'], 'lo-comments / lo-code without header comments')
 
-    analyzer.plotCommentDistribution('java')
-    analyzer.plotCommentDistribution('py')
+    #analyzer.plotCommentDistribution('java')
+    #analyzer.plotCommentDistribution('py')
 
-    analyzer.plotOverviewBarChart()
-    analyzer.plotOverviewStackedBarChart()
+    #analyzer.plotOverviewBarChart('lo-comment', 'Total lines of comments', 'lines')
+    #analyzer.plotOverviewStackedBarChart()
     
-    analyzer.plotAvgCommentLinesperCol('stars')
-    analyzer.plotAvgCommentLinesperCol('forks')
-    analyzer.plotAvgCommentLinesperCol('subscribers')
+    analyzer.plotOverviewBarChart('avg-len', 'Average length of comment', 'length')
 
-    print('projects with positive sentiment:')
-    print(df[df.com >= 0.05]['project'], '\n')
-
-    print('projects with negative sentiment:')
-    print(df[df.com <= -0.05]['project'], '\n')
-
-    print('project with neutral sentiment:')
-    print(df[(df.com < 0.05) & (df.com > -0.05)]['project'], '\n')
+    analyzer.plotStarBarChart()
 
 if __name__ == "__main__":
     main()

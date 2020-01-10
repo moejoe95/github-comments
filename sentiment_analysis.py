@@ -33,13 +33,16 @@ class SentimentAnalysis:
     def getAvgSentiment(self):
         comments = self.extractor.get_all_comments()
         sentiments = []
-        for com in comments:
+        pos_max = -1
+        pos_max_pos = -1
+        for i, com in enumerate(comments):
             com = clean_comment(com)
             sent_score = self.sent_analyzer.polarity_scores(com)
             sentiments.append(sent_score)
-
+            if sent_score['pos'] > pos_max:
+                pos_max = sent_score['pos']
+                pos_max_pos = i
         res = dict()        
         for cat in self.categories:
             res.update({cat: add_up(sentiments, cat) / len(sentiments)})
-
         return res
