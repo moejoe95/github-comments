@@ -11,4 +11,14 @@ okhttp
 mockito
 RxJava
 dubbo
+zxing
+tornado
+spaCy
+scrapy
+flask
+guava
+fastjson
+httpie
+elasticsearch
+ansible
 *.pyc

@@ -39,9 +39,9 @@ for argrepo in args.repo:
     if out:
         extr.write_files(out)
 
-    meta_req = requests.get('https://api.github.com/repos/' + repo_path)
-    meta_data = meta_req.json()
+    req_repo = requests.get('https://api.github.com/repos/' + repo_path)
+    meta_data_repo = req_repo.json()
 
     an = Analyzer()
-    an.add_to_dataframe(extr, meta_data)
+    an.add_to_dataframe(extr, meta_data_repo)
     #an.print_dataframe()
