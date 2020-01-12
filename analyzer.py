@@ -54,6 +54,7 @@ class Analyzer:
         self.df.sort_values(by=['lang'], inplace=True)
         print(self.df)
 
+
     def plotCommentCodeBarChart(self, comments, title):
         cpc = pd.DataFrame({'cpc': (comments / self.df['lo-code']).tolist()}, index=self.df['project'])
         cpc = cpc.sort_values(by='cpc', ascending=False)
@@ -77,30 +78,30 @@ class Analyzer:
         pl.set_xlabel('projects')
         plt.show()
 
+
     def plotCommentDistribution(self, lang):
         comment_df = self.df[self.df.lang == lang][const.categories].sum()
         pl = comment_df.plot.pie()
         plt.show()
+
 
     def plotOverviewBarChart(self, col, titel, yaxis):
         comment_java = self.df[self.df.lang == 'java'][col].sum() / 5
         comment_py = self.df[self.df.lang == 'py'][col].sum() / 5
         objects = ('Java', 'Python')
         y_pos = np.arange(len(objects))
-
         plt.bar(y_pos, [comment_java, comment_py], align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
         plt.ylabel(yaxis)
         plt.title(titel)
-
         plt.show()
+
 
     def plotOverviewStackedBarChart(self):
-
         test5 = self.df.groupby(['lang'])[const.categories].sum()
-
         test5.plot(kind='bar', stacked=True)
         plt.show()
+
 
     def plotCommentStarScatter(self):
         x = self.df['lo-comment']
@@ -130,7 +131,7 @@ def main():
     analyzer.plotCommentDistribution('java')
     analyzer.plotCommentDistribution('py')
 
-    analyzer.plotOverviewBarChart('lo-comment', 'Total lines of comments', 'lines')
+    analyzer.plotOverviewBarChart('lo-comment', 'Average lines of comments', 'lines')
     analyzer.plotOverviewStackedBarChart()
     
     analyzer.plotOverviewBarChart('avg-len', 'Average length of comment', 'length')
