@@ -86,14 +86,27 @@ class Analyzer:
 
 
     def plotOverviewBarChart(self, col, titel, yaxis):
-        comment_java = self.df[self.df.lang == 'java'][col].sum() / 5
-        comment_py = self.df[self.df.lang == 'py'][col].sum() / 5
+        comment_java = self.df[self.df.lang == 'java'][col].sum() / 10
+        comment_py = self.df[self.df.lang == 'py'][col].sum() / 10
         objects = ('Java', 'Python')
         y_pos = np.arange(len(objects))
         plt.bar(y_pos, [comment_java, comment_py], align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
         plt.ylabel(yaxis)
         plt.title(titel)
+        plt.show()
+
+
+    def plotAvgCommentCode(self):
+        comment_java = (self.df[self.df.lang == 'java']['lo-comment'] / self.df['lo-code']).median()
+        comment_py = (self.df[self.df.lang == 'py']['lo-comment'] / self.df['lo-code']).median()
+
+        print(comment_java)
+        objects = ('Java', 'Python')
+        y_pos = np.arange(len(objects))
+        plt.bar(y_pos, [comment_java, comment_py], align='center', alpha=0.5)
+        plt.xticks(y_pos, objects)
+
         plt.show()
 
 
@@ -104,8 +117,8 @@ class Analyzer:
 
 
     def plotCommentStarScatter(self):
-        x = self.df['lo-comment']
-        y = self.df['stars']
+        y = self.df['lo-comment'] / self.df['lo-code']
+        x = self.df['stars']
         plt.scatter(x, y)
 
         z = np.polyfit(x, y, 1)
@@ -124,21 +137,23 @@ def main():
 
     sum_py = df[df.lang == 'py']['lines'].sum()
     print('sum lines pyhton:', sum_py, '\n')
-    
-    analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
+
+    #analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
+    analyzer.plotAvgCommentCode()
+    '''
     analyzer.plotCommentCodeBarChart(df['lo-comment']-df['header-lines'], 'lo-comments / lo-code without header comments')
 
     analyzer.plotCommentDistribution('java')
     analyzer.plotCommentDistribution('py')
-
+    
     analyzer.plotOverviewBarChart('lo-comment', 'Average lines of comments', 'lines')
     analyzer.plotOverviewStackedBarChart()
     
     analyzer.plotOverviewBarChart('avg-len', 'Average length of comment', 'length')
 
     analyzer.plotStarBarChart()
-
+    
     analyzer.plotCommentStarScatter()
-
+    '''
 if __name__ == "__main__":
     main()
