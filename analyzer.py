@@ -138,9 +138,9 @@ def main():
     sum_py = df[df.lang == 'py']['lines'].sum()
     print('sum lines pyhton:', sum_py, '\n')
 
-    #analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
+    analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
     analyzer.plotAvgCommentCode()
-    '''
+    
     analyzer.plotCommentCodeBarChart(df['lo-comment']-df['header-lines'], 'lo-comments / lo-code without header comments')
 
     analyzer.plotCommentDistribution('java')
@@ -154,6 +154,6 @@ def main():
     analyzer.plotStarBarChart()
     
     analyzer.plotCommentStarScatter()
-    '''
+    
 if __name__ == "__main__":
     main()

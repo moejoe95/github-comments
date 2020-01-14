@@ -15,10 +15,13 @@ PYTHON = 'py'
 
 class CommentExtractor:
     # from https://stackoverflow.com/questions/25822749/python-regex-for-matching-single-line-and-multi-line-comments
+    
     reg_py_one = re.compile('(?:#[^\n]*)', re.DOTALL)
     reg_py_mul = re.compile('("""(?:(?!""").)*""")', re.DOTALL)
+
     reg_java_one = re.compile('(?:\/\/[^\n]*)', re.DOTALL)
     reg_java_mul = re.compile('(\/\*(?:(?!\*\/).)*\*\/)', re.DOTALL)
+
     reg_java_method = re.compile('^((private|public|protected)\s)?.+\(.*', re.DOTALL)
     reg_py_method = re.compile('.*[^\(-]\)\s*:.*', re.DOTALL)
     reg_java_class = re.compile('^((private|protected|public)\s)?((static|abstract|final)\s)?(class|@?interface|enum)\s.*', re.DOTALL)
