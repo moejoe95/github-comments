@@ -125,7 +125,7 @@ class CommentExtractor:
     def match_comments(self, file):
         content = ''
         self.number_files += 1
-        with open(file) as f:
+        with open(file, encoding='utf8') as f:
             for line in f.readlines():
                 content += line
                 if not line.isspace():
@@ -138,22 +138,25 @@ class CommentExtractor:
         i = 0
         prev_pos = -1
         com = ''
-        start = 0
+        comments = []
         for match in it:
             if i == 0:
-                start = match.regs[0][0]
                 prev_pos = match.regs[0][0]-1
             if prev_pos+2 >= match.regs[0][0]:
                 com += match.group() + '\n'
-                prev_pos = match.regs[0][1]
             else:
-                if com.startswith('//www.apache.org/licenses'):
-                    continue
-                if i <= 1:
-                    self.append_comment(match.group(), content, match.span(), True, file)
+                if com == '':
+                    comments.append([content[match.regs[0][0]:match.regs[0][1]], match.regs[0][0], match.regs[0][1]])
                 else:
-                    self.append_comment(com, content, [start, match.regs[0][1]], True, file)
+                    comments.append([com, 0, match.regs[0][1]])
+                com = ''
+
+            prev_pos = match.regs[0][1]
             i += 1
+
+        for com, start, end in comments:
+            self.append_comment(com, content, [start, end], True, file)
+
         for match in finditer(reg_mul, content):
             self.append_comment(match.group(), content, match.span(), False, file)
 
@@ -208,6 +211,8 @@ class CommentExtractor:
         for com in self.get_all_comments():
             total_len += len(com)
             i += 1
+        if i == 0:
+            return 0
         return total_len / i
 
     def get_number_comment(self, key):

@@ -16,8 +16,6 @@ class Analyzer:
 
 
     def add_to_dataframe(self, ex, meta_data):
-        if self.df['project'].isin([ex.repo_name]).any():
-            self.df = self.df[self.df.project != ex.repo_name]
 
         #sa = SentimentAnalysis(ex)
         #sen = sa.getAvgSentiment()
