@@ -84,8 +84,8 @@ class Analyzer:
 
 
     def plotOverviewBarChart(self, col, titel, yaxis):
-        comment_java = self.df[self.df.lang == 'java'][col].sum() / 10
-        comment_py = self.df[self.df.lang == 'py'][col].sum() / 10
+        comment_java = self.df[self.df.lang == 'java'][col].sum() / len(self.df[self.df.lang == 'java'])
+        comment_py = self.df[self.df.lang == 'py'][col].sum() / len(self.df[self.df.lang == 'py'])
         objects = ('Java', 'Python')
         y_pos = np.arange(len(objects))
         plt.bar(y_pos, [comment_java, comment_py], align='center', alpha=0.5)
@@ -135,7 +135,7 @@ def main():
 
     sum_py = df[df.lang == 'py']['lines'].sum()
     print('sum lines pyhton:', sum_py, '\n')
-
+    
     analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
     analyzer.plotAvgCommentCode()
     
