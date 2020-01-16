@@ -104,13 +104,13 @@ class Analyzer:
         y_pos = np.arange(len(objects))
         plt.bar(y_pos, [comment_java, comment_py], align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
-
+        plt.title('Average comment/code ratio')
         plt.show()
 
 
     def plotOverviewStackedBarChart(self):
-        test5 = self.df.groupby(['lang'])[const.categories].sum()
-        test5.plot(kind='bar', stacked=True)
+        t = self.df.groupby(['lang'])[const.categories].sum()
+        t.plot(kind='bar', stacked=True)
         plt.show()
 
 
@@ -118,10 +118,6 @@ class Analyzer:
         y = self.df['lo-comment'] / self.df['lo-code']
         x = self.df['stars']
         plt.scatter(x, y)
-
-        z = np.polyfit(x, y, 1)
-        p = np.poly1d(z)
-        plt.plot(x,p(x),"r--")
         plt.show()
 
 
@@ -136,20 +132,14 @@ def main():
     sum_py = df[df.lang == 'py']['lines'].sum()
     print('sum lines pyhton:', sum_py, '\n')
     
-    analyzer.plotCommentCodeBarChart(df['lo-comment'], 'lo-comments / lo-code')
     analyzer.plotAvgCommentCode()
-    
-    analyzer.plotCommentCodeBarChart(df['lo-comment']-df['header-lines'], 'lo-comments / lo-code without header comments')
 
     analyzer.plotCommentDistribution('java')
     analyzer.plotCommentDistribution('py')
     
-    analyzer.plotOverviewBarChart('lo-comment', 'Average lines of comments', 'lines')
     analyzer.plotOverviewStackedBarChart()
     
     analyzer.plotOverviewBarChart('avg-len', 'Average length of comment', 'length')
-
-    analyzer.plotStarBarChart()
     
     analyzer.plotCommentStarScatter()
     
