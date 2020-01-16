@@ -67,7 +67,6 @@ for repo_path, lang in repos.items():
     if os.path.isdir(repo_path):
         print('repo', repo_path, 'already exists in current folder')
     else:
-        continue
         print('cloning repo into: ' + repo_path)
         Repo.clone_from(git_url + repo_path, repo_path)
 

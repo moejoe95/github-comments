@@ -125,7 +125,7 @@ class CommentExtractor:
     def match_comments(self, file):
         content = ''
         self.number_files += 1
-        with open(file, encoding='utf8') as f:
+        with open(file, encoding='utf8', errors='ignore') as f:
             for line in f.readlines():
                 content += line
                 if not line.isspace():
