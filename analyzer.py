@@ -120,18 +120,33 @@ class Analyzer:
         plt.scatter(x, y)
         plt.show()
 
+    def plotBoxplot(self, df, col, outliers=True):
+        df.boxplot(col, showfliers=outliers)
+        plt.show()
 
 def main():
     analyzer = Analyzer()
     df = analyzer.df
-    print(df)
+    
+    df_java = df[df.lang == 'java']
+    df_python = df[df.lang == 'py']
 
     sum_java = df[df.lang == 'java']['lines'].sum()
     print('sum lines java:', sum_java)
+    print('number java projects', len(df_java), '\n')
 
     sum_py = df[df.lang == 'py']['lines'].sum()
-    print('sum lines pyhton:', sum_py, '\n')
-    
+    print('sum lines pyhton:', sum_py)
+    print('number of python projects', len(df_python), '\n')
+
+    ratio_java = pd.DataFrame({'comment/code': df_java['lo-comment'] / df_java['lo-code']})
+    analyzer.plotBoxplot(ratio_java, 'comment/code')
+    ratio_py = pd.DataFrame({'comment/code': df_python['lo-comment'] / df_python['lo-code']})
+    analyzer.plotBoxplot(ratio_py, 'comment/code')
+
+    analyzer.plotBoxplot(df_java, 'avg-len')
+    analyzer.plotBoxplot(df_python, 'avg-len')
+
     analyzer.plotAvgCommentCode()
 
     analyzer.plotCommentDistribution('java')
@@ -142,6 +157,6 @@ def main():
     analyzer.plotOverviewBarChart('avg-len', 'Average length of comment', 'length')
     
     analyzer.plotCommentStarScatter()
-    
+
 if __name__ == "__main__":
     main()
