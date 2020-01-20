@@ -121,6 +121,7 @@ class Analyzer:
         plt.show()
 
     def plotBoxplot(self, df, col, outliers=True):
+        #print('median', col, ':', df.median())
         df.boxplot(col, showfliers=outliers)
         plt.show()
 

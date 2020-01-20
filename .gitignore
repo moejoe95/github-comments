@@ -2,3 +2,6 @@
 *.txt
 *.pyc
 OAuth.py
+*.tex
+*.bib
+docs/img
